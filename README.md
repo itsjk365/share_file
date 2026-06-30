@@ -115,25 +115,44 @@
 
 ---
 
-## 5. (선택) 아무도 안 받은 파일까지 자동으로 지우기
+## 5. (선택) 아무도 안 받은 파일도 1분 뒤 지우기
 
-다운로드된 파일은 자동으로 사라지지만, **아무도 받지 않은 파일**은 그대로 남습니다.
-이걸 1분 뒤 자동 삭제하려면 아래 설정을 추가하세요. (조금 어렵습니다 — 건너뛰어도 앱은 동작합니다)
+**누군가 다운로드한 파일** → 받는 순간 바로 사라집니다. (4장까지 하면 이미 됩니다)
 
-이 기능은 `supabase/functions/delete-files/index.ts` 에 이미 만들어져 있습니다. 배포만 하면 됩니다.
+**아무도 안 받은 파일** → 그대로 창고에 남을 수 있습니다.
 
-### 5-1. Supabase CLI 설치 후 배포 (컴퓨터에서)
+"1분 지나면 알아서 치워 주기"를 쓰려면, 아래를 **한 번만** 설정해 주세요.
+(명령어가 조금 나옵니다. **안 해도** 올리기·받기는 그대로 쓸 수 있어요.)
+
+### 이게 뭘 하나요?
+
+1. Supabase에 **"오래된 파일 치우기"** 프로그램을 올립니다. (코드는 이미 `supabase/functions/delete-files/` 에 있어요)
+2. **1분마다** 그 프로그램이 자동으로 돌게 예약합니다.
+3. 그러면 **올린 지 1분이 넘었는데 아무도 안 받은 파일**이 스스로 삭제됩니다.
+
+### 5-1. "치우기" 프로그램 올리기 (내 컴퓨터에서)
+
+Node.js가 있는 터미널(명령 프롬pt, PowerShell 등)을 열고, 한 줄씩 입력합니다.
+
 ```bash
-npm install -g supabase          # Supabase 도구 설치 (Node.js 필요)
-supabase login                   # 로그인
+npm install -g supabase
+supabase login
 supabase link --project-ref 내프로젝트참조ID
 supabase secrets set CRON_SECRET=아무거나긴비밀문자열
 supabase functions deploy delete-files
 ```
-> `내프로젝트참조ID` 는 Supabase 프로젝트 URL의 `https://` 와 `.supabase.co` 사이 글자입니다.
+
+| 적는 것 | 쉬운 설명 |
+|---------|-----------|
+| `내프로젝트참조ID` | Supabase 주소 `https://abcd1234.supabase.co` 에서 **abcd1234** 부분 |
+| `CRON_SECRET` | 5-2 SQL에서 쓸 **임의의 긴 비밀번호** (메모해 두세요) |
 
 ### 5-2. 1분마다 자동 실행 예약하기
-Supabase **SQL Editor** 에서 (먼저 `Database → Extensions` 에서 `pg_cron`, `pg_net` 를 켜두세요):
+
+1. Supabase 왼쪽 **Database → Extensions** 에서 **`pg_cron`**, **`pg_net`** 을 켭니다.
+2. **SQL Editor → New query** 를 열고 아래 SQL을 붙여 넣습니다.
+3. `내프로젝트참조ID`, CRON_SECRET을 본인 값으로 바꿉니다.
+4. **Run** 클릭.
 
 ```sql
 select cron.schedule(
@@ -147,6 +166,8 @@ select cron.schedule(
   $$
 );
 ```
+
+> 이 SQL은 Supabase에게 **"매 1분마다 치우기 프로그램을 불러라"** 고 예약해 주는 것입니다.
 
 ---
 
