@@ -1,0 +1,5 @@
+[project]
+# supabase link --project-ref YOUR_PROJECT_REF 로 연결됩니다.
+
+[functions.delete-files]
+verify_jwt = false

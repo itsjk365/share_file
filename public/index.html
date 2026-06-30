@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Share File</title>
+  <style>
+    @font-face {
+      font-family: 'Paperlogy';
+      src: url('Paperlogy-6SemiBold.ttf') format('truetype');
+      font-weight: 600;
+      font-style: normal;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Paperlogy', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      background: white;
+      border-radius: 20px;
+      padding: 36px;
+      width: 520px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+    }
+
+    h1 {
+      font-family: 'Paperlogy', sans-serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: #111;
+      letter-spacing: -0.4px;
+    }
+
+    /* ── 로그인 화면 ── */
+    #login-view {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 16px 0 8px;
+    }
+
+    .login-icon {
+      width: 60px;
+      height: 60px;
+      background: #111;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 22px;
+      box-shadow: 0 16px 32px rgba(0,0,0,0.18), 0 4px 8px rgba(0,0,0,0.08);
+    }
+
+    .login-title {
+      font-family: 'Paperlogy', sans-serif;
+      font-size: 24px;
+      font-weight: 600;
+      color: #111;
+      letter-spacing: -0.5px;
+      margin-bottom: 7px;
+    }
+
+    .login-desc {
+      font-size: 13px;
+      color: #c0c0c0;
+      margin-bottom: 36px;
+      letter-spacing: 0.1px;
+    }
+
+    /* ── PIN 입력 ── */
+    .pin-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .pin-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .pin-box {
+      width: 68px;
+      height: 76px;
+      border: 2px solid #e8e8e8;
+      border-radius: 20px;
+      text-align: center;
+      font-size: 26px;
+      font-family: monospace;
+      outline: none;
+      background: #f5f5f5;
+      color: #111;
+      caret-color: transparent;
+      transition: border-color 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+                  box-shadow   0.22s cubic-bezier(0.22, 1, 0.36, 1),
+                  transform    0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+                  background   0.18s ease;
+    }
+
+    .pin-box:focus {
+      border-color: #111;
+      background: white;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.13), 0 2px 8px rgba(0,0,0,0.06);
+      transform: translateY(-4px) scale(1.05);
+    }
+
+    .pin-box.filled {
+      border-color: #333;
+      background: white;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+      transform: translateY(-2px);
+    }
+
+    .pin-box.shake {
+      animation: pinShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+    }
+
+    @keyframes pinShake {
+      0%,100% { transform: translateX(0) translateY(0); }
+      15%     { transform: translateX(-9px); }
+      40%     { transform: translateX(9px); }
+      65%     { transform: translateX(-5px); }
+      85%     { transform: translateX(5px); }
+    }
+
+    .pin-error {
+      margin-top: 22px;
+      font-size: 12.5px;
+      color: #ef4444;
+      min-height: 16px;
+      letter-spacing: 0.1px;
+      opacity: 0;
+      transform: translateY(-6px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .pin-error.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── 버튼 공통 ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 20px;
+      border-radius: 10px;
+      border: none;
+      font-family: 'Paperlogy', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn:hover   { opacity: 0.85; transform: translateY(-1px); }
+    .btn:active  { transform: translateY(0); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .btn-logout {
+      background: #f4f4f4;
+      color: #555;
+      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: 8px;
+    }
+
+    /* ── 헤더 ── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-icon {
+      width: 36px;
+      height: 36px;
+      background: #111;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    /* ── 타이머 ── */
+    .timer {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #92400e;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      padding: 8px 12px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+    }
+
+    /* ── 업로드 영역 ── */
+    .upload-area {
+      border: 2px dashed #e0e0e0;
+      border-radius: 14px;
+      padding: 32px 16px;
+      text-align: center;
+      color: #bbb;
+      font-size: 14px;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+      margin-bottom: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .upload-area .upload-icon { color: #ccc; transition: color 0.15s; }
+    .upload-limit { font-size: 11px; color: #d0d0d0; }
+    .upload-area:hover,
+    .upload-area.drag-over {
+      border-color: #4f8ef7;
+      color: #4f8ef7;
+      background: #f5f8ff;
+    }
+    .upload-area:hover .upload-icon,
+    .upload-area.drag-over .upload-icon { color: #4f8ef7; }
+
+    /* ── 진행바 ── */
+    .progress-bar-wrap {
+      background: #f0f0f0;
+      border-radius: 99px;
+      height: 4px;
+      margin-bottom: 8px;
+      overflow: hidden;
+      display: none;
+    }
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #4f8ef7, #6fa8ff);
+      width: 0%;
+      transition: width 0.2s;
+      border-radius: 99px;
+    }
+    .progress-label {
+      font-size: 12px;
+      color: #999;
+      margin-bottom: 10px;
+      display: none;
+    }
+
+    /* ── 업로드 결과 ── */
+    .upload-result {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 14px;
+    }
+    .upload-result-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      padding: 7px 12px;
+      border-radius: 8px;
+    }
+    .upload-result-item.ok  { background: #f0fdf4; color: #166534; }
+    .upload-result-item.err { background: #fef2f2; color: #991b1b; }
+    .upload-result-item .ri { font-size: 14px; flex-shrink: 0; }
+    .upload-result-item .rn { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* ── 파일 목록 ── */
+    .file-list-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .file-list-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #aaa;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+    .file-count-badge {
+      font-size: 11px;
+      color: #888;
+      background: #f4f4f4;
+      padding: 2px 8px;
+      border-radius: 99px;
+    }
+
+    .file-list { display: flex; flex-direction: column; gap: 6px; }
+    .file-item.new-item { animation: highlight 1.8s ease-out forwards; }
+    @keyframes highlight {
+      0%   { background: #dbeafe; }
+      100% { background: #f7f7f7; }
+    }
+
+    .file-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 14px;
+      background: #f7f7f7;
+      border-radius: 10px;
+      gap: 8px;
+      transition: background 0.12s;
+    }
+    .file-item:hover { background: #f0f0f0; }
+
+    .file-meta { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+    .file-name {
+      font-size: 14px;
+      color: #222;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 260px;
+    }
+    .file-size { font-size: 11px; color: #bbb; }
+
+    .file-expires {
+      flex-shrink: 0;
+      font-size: 11px;
+      color: #bbb;
+      text-align: right;
+      min-width: 64px;
+      transition: color 0.3s;
+    }
+    .file-expires.warn   { color: #f59e0b; }
+    .file-expires.urgent { color: #ef4444; font-weight: 600; }
+
+    .btn-download {
+      flex-shrink: 0;
+      background: white;
+      border: 1.5px solid #e8e8e8;
+      color: #555;
+      padding: 5px 13px;
+      font-family: 'Paperlogy', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+    .btn-download:hover { border-color: #111; color: #111; background: white; }
+
+    .empty {
+      text-align: center;
+      color: #ddd;
+      font-size: 14px;
+      padding: 32px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* ── 토스트 ── */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #222;
+      color: white;
+      font-family: 'Paperlogy', sans-serif;
+      font-size: 13px;
+      padding: 10px 20px;
+      border-radius: 10px;
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+      white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+    }
+    .toast.show { opacity: 1; }
+
+    /* ── 로딩 스피너 오버레이 ── */
+    .spinner-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.85);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      z-index: 2000;
+    }
+    .spinner-overlay.show { display: flex; }
+
+    .spinner-ring {
+      width: 28px;
+      height: 28px;
+      border: 2px solid #e5e5e5;
+      border-top-color: #111;
+      border-radius: 50%;
+      animation: spin 0.65s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .spinner-text {
+      font-family: 'Paperlogy', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: #111;
+      letter-spacing: 0.1px;
+    }
+    .spinner-sub {
+      font-size: 12px;
+      color: #999;
+      margin-top: -10px;
+    }
+
+    .footer-meta {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 10px;
+      margin-top: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #111;
+      letter-spacing: 0.2px;
+    }
+    .signature-accent {
+      font-weight: 900;
+      color: #f97316;
+    }
+
+    /* ── 모바일 반응형 ── */
+    @media (max-width: 560px) {
+      body { align-items: flex-start; padding: 16px; }
+
+      .container {
+        width: 100%;
+        padding: 24px 20px;
+        border-radius: 16px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+      }
+
+      .pin-box { width: 60px; height: 68px; font-size: 22px; border-radius: 16px; }
+      .pin-row { gap: 10px; }
+
+      .upload-area { padding: 24px 12px; }
+      .file-name { max-width: 100%; }
+      .file-item { flex-wrap: wrap; }
+      .file-meta { width: 100%; }
+      .file-expires {
+        order: 3;
+        min-width: unset;
+        flex: 1;
+        text-align: left;
+        font-size: 10px;
+      }
+      .btn-download { order: 2; }
+      .toast {
+        white-space: normal;
+        max-width: calc(100vw - 48px);
+        text-align: center;
+        bottom: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- 로그인 화면 -->
+  <div id="login-view">
+    <div class="login-icon">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+        <rect x="5" y="11" width="14" height="11" rx="2.5" fill="white" opacity="0.95"/>
+        <path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <h1 class="login-title">Share File</h1>
+    <p class="login-desc">4자리 PIN을 입력하세요</p>
+    <div class="pin-area">
+      <div class="pin-row">
+        <input class="pin-box" type="password" maxlength="1" inputmode="numeric" autocomplete="off">
+        <input class="pin-box" type="password" maxlength="1" inputmode="numeric" autocomplete="off">
+        <input class="pin-box" type="password" maxlength="1" inputmode="numeric" autocomplete="off">
+        <input class="pin-box" type="password" maxlength="1" inputmode="numeric" autocomplete="off">
+      </div>
+      <p class="pin-error" id="pin-error"></p>
+    </div>
+  </div>
+
+  <!-- 메인 화면 -->
+  <div id="main-view" style="display:none;">
+    <div class="header">
+      <div class="header-left">
+        <div class="header-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <rect x="5" y="11" width="14" height="11" rx="2.5" fill="white" opacity="0.95"/>
+            <path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h1>Share File</h1>
+      </div>
+      <button class="btn btn-logout" id="logout-btn">로그아웃</button>
+    </div>
+
+    <div class="timer" id="timer-display">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+      </svg>
+      <span>업로드된 파일은 1분 이후 자동 삭제됩니다. (최대 2분)</span>
+    </div>
+
+    <div class="upload-area" id="drop-zone">
+      <svg class="upload-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      <span>파일을 여기에 끌어다 놓거나 클릭하여 업로드</span>
+      <span class="upload-limit">최대 50MB</span>
+      <input type="file" id="file-input" style="display:none" multiple>
+    </div>
+
+    <div class="progress-bar-wrap" id="progress-wrap">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <div class="progress-label" id="progress-label"></div>
+
+    <div class="upload-result" id="upload-result"></div>
+
+    <div class="file-list-header" id="file-list-header" style="display:none;">
+      <span class="file-list-title">파일 목록</span>
+      <span class="file-count-badge" id="file-count"></span>
+    </div>
+    <div class="file-list" id="file-list"></div>
+  </div>
+
+  <div class="footer-meta">
+    <span>v1.3.0</span>
+    <span>@it's jk<span class="signature-accent">_</span></span>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- 업로드/다운로드 중 표시되는 로딩 스피너 -->
+<div class="spinner-overlay" id="spinner-overlay">
+  <div class="spinner-ring"></div>
+  <div class="spinner-text" id="spinner-text">처리 중…</div>
+  <div class="spinner-sub" id="spinner-sub"></div>
+</div>
+
+<script>
+  // ────────────────────────────────────────
+  // 토큰 관리 (localStorage, 8시간 만료)
+  // ────────────────────────────────────────
+  const TOKEN_KEY = 'sf_token';
+
+  function getToken()       { return localStorage.getItem(TOKEN_KEY); }
+  function saveToken(t)     { localStorage.setItem(TOKEN_KEY, t); }
+  function clearToken()     { localStorage.removeItem(TOKEN_KEY); }
+
+  function isTokenValid(t) {
+    if (!t) return false;
+    try {
+      const seg = t.split('.')[0];
+      let s = seg.replace(/-/g, '+').replace(/_/g, '/');
+      const rem = s.length % 4;
+      if (rem) s += '='.repeat(4 - rem);
+      const { exp } = JSON.parse(atob(s));
+      return typeof exp === 'number' && Date.now() < exp;
+    } catch { return false; }
+  }
+
+  // ────────────────────────────────────────
+  // API 헬퍼
+  // ────────────────────────────────────────
+  async function callApi(path, method = 'GET', body = null) {
+    const opts = {
+      method,
+      cache: 'no-store',
+      headers: { Authorization: `Bearer ${getToken() ?? ''}` }
+    };
+    if (body !== null) {
+      opts.headers['Content-Type'] = 'application/json';
+      opts.body = JSON.stringify(body);
+    }
+    return fetch(path, opts);
+  }
+
+  // ────────────────────────────────────────
+  // DOM
+  // ────────────────────────────────────────
+  const loginView    = document.getElementById('login-view');
+  const mainView     = document.getElementById('main-view');
+  const fileListEl   = document.getElementById('file-list');
+  const dropZone     = document.getElementById('drop-zone');
+  const fileInput    = document.getElementById('file-input');
+  const progressWrap = document.getElementById('progress-wrap');
+  const progressBar  = document.getElementById('progress-bar');
+  const pinBoxes     = Array.from(document.querySelectorAll('.pin-box'));
+
+  let countdownInterval = null;
+  let uploadAllowed     = true;
+  const localNameCache  = new Map();
+
+  // ────────────────────────────────────────
+  // PIN 입력 처리
+  // ────────────────────────────────────────
+  pinBoxes.forEach((box, i) => {
+    box.addEventListener('keydown', e => {
+      if (e.key === 'Backspace') {
+        e.preventDefault();
+        if (box.value) {
+          box.value = '';
+          box.classList.remove('filled');
+        } else if (i > 0) {
+          pinBoxes[i - 1].value = '';
+          pinBoxes[i - 1].classList.remove('filled');
+          pinBoxes[i - 1].focus();
+        }
+      } else if (e.key === 'Enter') {
+        submitPin();
+      }
+    });
+
+    box.addEventListener('input', () => {
+      const val = box.value.replace(/\D/g, '');
+      box.value = val ? val.slice(-1) : '';
+      if (box.value) {
+        box.classList.add('filled');
+        if (i < 3) pinBoxes[i + 1].focus();
+        else submitPin();
+      } else {
+        box.classList.remove('filled');
+      }
+    });
+
+    box.addEventListener('paste', e => {
+      e.preventDefault();
+      const text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+      [...text.slice(0, 4)].forEach((ch, j) => {
+        const target = pinBoxes[i + j];
+        if (!target) return;
+        target.value = ch;
+        target.classList.add('filled');
+      });
+      const next = Math.min(i + text.length, 3);
+      pinBoxes[next].focus();
+      if (i + text.length >= 4) setTimeout(submitPin, 50);
+    });
+  });
+
+  function getPinValue()  { return pinBoxes.map(b => b.value).join(''); }
+
+  function resetPinBoxes() {
+    pinBoxes.forEach(b => { b.value = ''; b.disabled = false; b.classList.remove('filled', 'shake'); });
+    pinBoxes[0].focus();
+  }
+
+  async function submitPin() {
+    const pin = getPinValue();
+    if (pin.length < 4) return;
+
+    const errorEl = document.getElementById('pin-error');
+    errorEl.textContent = '';
+    errorEl.classList.remove('visible');
+    pinBoxes.forEach(b => b.disabled = true);
+
+    try {
+      const resp = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        cache: 'no-store',
+        body: JSON.stringify({ pin })
+      });
+      if (resp.ok) {
+        const { token } = await resp.json();
+        saveToken(token);
+        showMain();
+      } else {
+        errorEl.textContent = 'PIN이 올바르지 않습니다.';
+        errorEl.classList.add('visible');
+        pinBoxes.forEach(b => b.classList.add('shake'));
+        setTimeout(resetPinBoxes, 450);
+      }
+    } catch {
+      errorEl.textContent = '네트워크 오류가 발생했습니다.';
+      errorEl.classList.add('visible');
+      pinBoxes.forEach(b => b.disabled = false);
+    }
+  }
+
+  // ────────────────────────────────────────
+  // 화면 전환
+  // ────────────────────────────────────────
+  function showLogin() {
+    clearInterval(countdownInterval);
+    loginView.style.display = 'block';
+    mainView.style.display  = 'none';
+    const pe = document.getElementById('pin-error');
+    pe.textContent = '';
+    pe.classList.remove('visible');
+    setTimeout(resetPinBoxes, 80);
+  }
+
+  async function showMain() {
+    loginView.style.display = 'none';
+    mainView.style.display  = 'block';
+    await applyIpPermissions();
+    loadFiles();
+  }
+
+  function logout() {
+    clearToken();
+    showLogin();
+  }
+
+  document.getElementById('logout-btn').addEventListener('click', logout);
+
+  // ────────────────────────────────────────
+  // IP 권한 체크
+  // ────────────────────────────────────────
+  async function applyIpPermissions() {
+    try {
+      const res = await fetch('/api/check-ip', { cache: 'no-store' });
+      if (res.ok) {
+        const perm = await res.json();
+        uploadAllowed = perm.uploadAllowed !== false;
+      }
+    } catch {}
+
+    if (!uploadAllowed) {
+      dropZone.style.pointerEvents = 'none';
+      dropZone.style.opacity       = '0.4';
+      dropZone.style.cursor        = 'not-allowed';
+      dropZone.querySelector('span').textContent = '이 IP에서는 업로드가 허용되지 않습니다';
+    } else {
+      dropZone.style.pointerEvents = '';
+      dropZone.style.opacity       = '';
+      dropZone.style.cursor        = '';
+      dropZone.querySelector('span').textContent = '파일을 여기에 끌어다 놓거나 클릭하여 업로드';
+    }
+  }
+
+  // ────────────────────────────────────────
+  // 파일 목록
+  // ────────────────────────────────────────
+  async function loadFiles(newPaths = []) {
+    const resp = await callApi('/api/files');
+    fileListEl.innerHTML = '';
+
+    if (resp.status === 401) { logout(); return; }
+    if (!resp.ok) {
+      fileListEl.innerHTML = `<div class="empty">목록을 불러오지 못했습니다</div>`;
+      return;
+    }
+
+    const { files, metadata } = await resp.json();
+    const nameMap  = new Map((metadata || []).map(r => [r.path, r.original_name]));
+    const filtered = (files || []).filter(f => f.name !== '.emptyFolderPlaceholder');
+
+    const headerEl = document.getElementById('file-list-header');
+    const countEl  = document.getElementById('file-count');
+
+    if (filtered.length === 0) {
+      headerEl.style.display = 'none';
+      fileListEl.innerHTML = `
+        <div class="empty">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#ddd" stroke-width="1.3">
+            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+            <polyline points="13 2 13 9 20 9"/>
+          </svg>
+          <span>업로드된 파일이 없습니다</span>
+        </div>`;
+      return;
+    }
+
+    headerEl.style.display = 'flex';
+    countEl.textContent = `${filtered.length}개`;
+    const newSet = new Set(newPaths);
+
+    filtered.forEach(file => {
+      const item = document.createElement('div');
+      item.className = 'file-item' + (newSet.has(file.name) ? ' new-item' : '');
+
+      const sizeStr     = file.metadata?.size != null ? formatSize(file.metadata.size) : '';
+      const displayName = nameMap.get(file.name) || localNameCache.get(file.name) || file.name.replace(/^\d+_/, '');
+      const expiresAt   = file.created_at
+        ? new Date(file.created_at).getTime() + 1 * 60 * 1000
+        : null;
+
+      item.innerHTML = `
+        <div class="file-meta">
+          <span class="file-name" title="${escapeHtml(displayName)}">${escapeHtml(displayName)}</span>
+          <span class="file-size">${sizeStr}</span>
+        </div>
+        <span class="file-expires" data-expires="${expiresAt ?? ''}">--:--</span>
+        <button class="btn-download">다운로드</button>
+      `;
+
+      const dlBtn = item.querySelector('.btn-download');
+      dlBtn.addEventListener('click', () => downloadFile(file.name, displayName, dlBtn));
+      fileListEl.appendChild(item);
+    });
+
+    startFileCountdowns();
+  }
+
+  // ────────────────────────────────────────
+  // 다운로드
+  // ────────────────────────────────────────
+  async function downloadFile(storageName, displayName, btnEl) {
+    if (!isTokenValid(getToken())) { logout(); return; }
+
+    // 버튼 로딩 상태 + 스피너 표시
+    if (btnEl) { btnEl.disabled = true; btnEl.textContent = '받는 중…'; }
+    showSpinner('다운로드 중…', displayName);
+
+    const params = new URLSearchParams({ path: storageName, name: displayName });
+    let resp;
+    try {
+      resp = await fetch(`/api/download?${params}`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+        cache: 'no-store'
+      });
+    } catch {
+      hideSpinner();
+      showToast('다운로드 실패: 네트워크 오류');
+      if (btnEl) { btnEl.disabled = false; btnEl.textContent = '다운로드'; }
+      return;
+    }
+
+    if (!resp.ok) {
+      hideSpinner();
+      let msg = '다운로드 실패';
+      try { msg = (await resp.json()).error || msg; } catch {}
+      showToast(msg);
+      if (btnEl) { btnEl.disabled = false; btnEl.textContent = '다운로드'; }
+      return;
+    }
+
+    // 파일 수신 후 즉시 저장 트리거
+    const blob = await resp.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = displayName;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 200);
+
+    hideSpinner();
+    showToast('다운로드 완료 — 파일이 삭제되었습니다', 6000);
+    await loadFiles(); // 삭제된 파일 목록에서 제거
+  }
+
+  // ────────────────────────────────────────
+  // 드래그 앤 드롭
+  // ────────────────────────────────────────
+  dropZone.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', e => uploadFiles(Array.from(e.target.files)));
+  dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    uploadFiles(Array.from(e.dataTransfer.files));
+  });
+
+  // ────────────────────────────────────────
+  // 업로드 (서명 URL 방식)
+  // ────────────────────────────────────────
+  async function uploadFiles(files) {
+    if (!files.length) return;
+    if (!uploadAllowed) { showToast('이 IP에서는 업로드가 허용되지 않습니다.'); return; }
+
+    const resultEl = document.getElementById('upload-result');
+    const labelEl  = document.getElementById('progress-label');
+    const total    = files.length;
+    const uploaded = [];
+
+    resultEl.innerHTML         = '';
+    progressWrap.style.display = 'block';
+    labelEl.style.display      = 'block';
+    progressBar.style.width    = '0%';
+
+    showSpinner('업로드 중…', `0 / ${total}`);
+
+    for (let i = 0; i < total; i++) {
+      const file     = files[i];
+      const safeName = toSafeStorageName(file.name);
+      const path     = `${Date.now()}_${safeName}`;
+      labelEl.textContent = `업로드 중… ${i + 1} / ${total}`;
+      setSpinner('업로드 중…', `${i + 1} / ${total}`);
+
+      const row = document.createElement('div');
+      try {
+        // 1단계: 서버에서 Supabase 서명 업로드 URL 발급
+        const urlResp = await callApi('/api/upload-url', 'POST', { path });
+        if (!urlResp.ok) {
+          const e = await urlResp.json().catch(() => ({}));
+          throw new Error(e.error || '서명 URL 발급 실패');
+        }
+        const { uploadUrl } = await urlResp.json();
+
+        // 2단계: 브라우저 → Supabase 직접 업로드 (Vercel 미경유 → 크기 제한 없음)
+        const upResp = await fetch(uploadUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': file.type || 'application/octet-stream' },
+          body: file
+        });
+        if (!upResp.ok) {
+          const detail = await upResp.text().catch(() => '');
+          throw new Error('Supabase 업로드 실패' + (detail ? `: ${detail}` : ''));
+        }
+
+        // 3단계: 원본 파일명 서버에 저장
+        localNameCache.set(path, file.name);
+        await callApi('/api/metadata', 'POST', { path, original_name: file.name });
+        uploaded.push(path);
+        row.className = 'upload-result-item ok';
+        row.innerHTML = `<span class="ri">✓</span><span class="rn" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</span>`;
+      } catch (e) {
+        row.className = 'upload-result-item err';
+        row.innerHTML = `<span class="ri">✕</span><span class="rn" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</span><span style="margin-left:auto;font-size:11px;opacity:.7">${escapeHtml(e.message)}</span>`;
+      }
+
+      resultEl.appendChild(row);
+      progressBar.style.width = `${Math.round((i + 1) / total * 100)}%`;
+    }
+
+    hideSpinner();
+
+    labelEl.textContent = `${uploaded.length} / ${total}개 완료`;
+    setTimeout(() => {
+      progressWrap.style.display = 'none';
+      labelEl.style.display      = 'none';
+      progressBar.style.width    = '0%';
+    }, 1200);
+
+    fileInput.value = '';
+    await loadFiles(uploaded);
+    if (uploaded.length > 0) fileListEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // ────────────────────────────────────────
+  // 파일별 삭제 카운트다운
+  // ────────────────────────────────────────
+  function startFileCountdowns() {
+    clearInterval(countdownInterval);
+    countdownInterval = setInterval(() => {
+      document.querySelectorAll('.file-expires').forEach(el => {
+        const exp = parseInt(el.dataset.expires);
+        if (!exp) return;
+        const rem = exp - Date.now();
+        if (rem <= 0) {
+          el.textContent = '삭제 대기중';
+          el.className   = 'file-expires urgent';
+          return;
+        }
+        const m = String(Math.floor(rem / 60000)).padStart(2, '0');
+        const s = String(Math.floor((rem % 60000) / 1000)).padStart(2, '0');
+        el.textContent = `${m}:${s} 후 삭제`;
+        el.className = 'file-expires' +
+          (rem < 60000 ? ' urgent' : rem < 180000 ? ' warn' : '');
+      });
+    }, 1000);
+  }
+
+  // ────────────────────────────────────────
+  // 유틸
+  // ────────────────────────────────────────
+  function formatSize(bytes) {
+    if (bytes < 1024)        return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function toSafeStorageName(name) {
+    const dotIdx = name.lastIndexOf('.');
+    const hasExt = dotIdx > 0 && dotIdx < name.length - 1;
+    const base   = hasExt ? name.slice(0, dotIdx) : name;
+    const ext    = hasExt ? name.slice(dotIdx + 1) : '';
+    const safeBase = base.replace(/[^a-zA-Z0-9\-_]/g, '_').replace(/_+/g, '_').replace(/^_+|_+$/g, '') || 'file';
+    const safeExt  = ext.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+    return safeExt ? `${safeBase}.${safeExt}` : safeBase;
+  }
+
+  // ────────────────────────────────────────
+  // 로딩 스피너 오버레이
+  // ────────────────────────────────────────
+  const spinnerOverlay = document.getElementById('spinner-overlay');
+  const spinnerTextEl   = document.getElementById('spinner-text');
+  const spinnerSubEl    = document.getElementById('spinner-sub');
+
+  function showSpinner(text = '처리 중…', sub = '') {
+    spinnerTextEl.textContent = text;
+    spinnerSubEl.textContent  = sub;
+    spinnerOverlay.classList.add('show');
+  }
+  function setSpinner(text, sub = '') {
+    if (text != null) spinnerTextEl.textContent = text;
+    spinnerSubEl.textContent = sub;
+  }
+  function hideSpinner() {
+    spinnerOverlay.classList.remove('show');
+  }
+
+  let toastTimer = null;
+  function showToast(msg, duration = 2800) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), duration);
+  }
+
+  // ────────────────────────────────────────
+  // 초기화
+  // ────────────────────────────────────────
+  if (isTokenValid(getToken())) {
+    showMain();
+  } else {
+    clearToken();
+    showLogin();
+  }
+</script>
+</body>
+</html>
